@@ -1,30 +1,26 @@
 package storage
 
 import (
-	"user_exam/storage/postgres"
-	"user_exam/storage/repo"
+	"user_exam/pkg/logger"
+	"user_exam/storage/mongodb"
+	"user_exam/storage/mongorepo"
 
-	"github.com/jmoiron/sqlx"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// IStorage ...
-type IStorage interface {
-	User() repo.UserStorageI
+type StorageI interface {
+	UserService() mongorepo.UserStorageI
 }
 
-type Pg struct {
-	db       *sqlx.DB
-	userRepo repo.UserStorageI
+type storagePg struct {
+	userService mongorepo.UserStorageI
 }
 
-// NewStoragePg ...
-func NewStoragePg(db *sqlx.DB) *Pg {
-	return &Pg{
-		db:       db,
-		userRepo: postgres.NewUserRepo(db),
-	}
+func New(collection *mongo.Collection, log logger.Logger) StorageI {
+	// return &storagePg{userService: postgres.NewUserRepo(db, log)}
+	return &storagePg{userService: mongodb.NewUserRepo(collection, log)}
 }
 
-func (s Pg) User() repo.UserStorageI {
-	return s.userRepo
+func (s *storagePg) UserService() mongorepo.UserStorageI {
+	return s.userService
 }

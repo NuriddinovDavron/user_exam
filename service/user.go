@@ -7,19 +7,17 @@ import (
 	"user_exam/storage"
 
 	grpcClient "user_exam/service/grpc_client"
-
-	"github.com/jmoiron/sqlx"
 )
 
 // UserService ...
 type UserService struct {
-	storage storage.IStorage
+	storage storage.StorageI
 	logger  l.Logger
 	client  grpcClient.IServiceManager
 }
 
 func (u UserService) CreateUser(ctx context.Context, user *pb.CreateUserRequest) (*pb.UserApi, error) {
-	userResponse, err := u.storage.User().CreateUser(user)
+	userResponse, err := u.storage.UserService().CreateUser(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +25,7 @@ func (u UserService) CreateUser(ctx context.Context, user *pb.CreateUserRequest)
 }
 
 func (u UserService) GetUserById(ctx context.Context, request *pb.GetUserByIdRequest) (*pb.UserApi, error) {
-	user, err := u.storage.User().GetUserById(request)
+	user, err := u.storage.UserService().GetUserById(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +33,7 @@ func (u UserService) GetUserById(ctx context.Context, request *pb.GetUserByIdReq
 }
 
 func (u UserService) GetAllUser(ctx context.Context, request *pb.GetAllUserRequest) (*pb.GetAllUserResponse, error) {
-	users, err := u.storage.User().GetAllUser(request)
+	users, err := u.storage.UserService().GetAllUser(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +41,7 @@ func (u UserService) GetAllUser(ctx context.Context, request *pb.GetAllUserReque
 }
 
 func (u UserService) UpdateUser(ctx context.Context, user *pb.User) (*pb.UserApi, error) {
-	userR, err := u.storage.User().UpdateUser(user)
+	userR, err := u.storage.UserService().UpdateUser(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +50,7 @@ func (u UserService) UpdateUser(ctx context.Context, user *pb.User) (*pb.UserApi
 }
 
 func (u UserService) DeleteUser(ctx context.Context, request *pb.GetUserByIdRequest) (*pb.DeleteUserResponse, error) {
-	err := u.storage.User().DeleteUser(request)
+	err := u.storage.UserService().DeleteUser(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +58,7 @@ func (u UserService) DeleteUser(ctx context.Context, request *pb.GetUserByIdRequ
 }
 
 func (u *UserService) CheckField(ctx context.Context, req *pb.CheckUser) (*pb.CheckRes, error) {
-	check, err := u.storage.User().CheckField(req)
+	check, err := u.storage.UserService().CheckField(ctx, req)
 	if err != nil {
 		u.logger.Error(err.Error())
 		return nil, err
@@ -69,7 +67,7 @@ func (u *UserService) CheckField(ctx context.Context, req *pb.CheckUser) (*pb.Ch
 }
 
 func (u *UserService) GetUserByEmail(ctx context.Context, req *pb.EmailRequest) (*pb.UserApi, error) {
-	res, err := u.storage.User().GetUserByEmail(req)
+	res, err := u.storage.UserService().GetUserByEmail(ctx, req)
 	if err != nil {
 		u.logger.Error(err.Error())
 		return nil, err
@@ -78,7 +76,7 @@ func (u *UserService) GetUserByEmail(ctx context.Context, req *pb.EmailRequest) 
 }
 
 func (u *UserService) GetUserByRefreshToken(ctx context.Context, req *pb.UserToken) (*pb.UserApi, error) {
-	res, err := u.storage.User().GetUserByRefreshToken(req)
+	res, err := u.storage.UserService().GetUserByRefreshToken(ctx, req)
 	if err != nil {
 		u.logger.Error(err.Error())
 		return nil, err
@@ -86,10 +84,9 @@ func (u *UserService) GetUserByRefreshToken(ctx context.Context, req *pb.UserTok
 	return res, nil
 }
 
-// NewUserService ...
-func NewUserService(db *sqlx.DB, log l.Logger, client grpcClient.IServiceManager) *UserService {
+func NewUserService(storage storage.StorageI, log l.Logger, client grpcClient.IServiceManager) *UserService {
 	return &UserService{
-		storage: storage.NewStoragePg(db),
+		storage: storage,
 		logger:  log,
 		client:  client,
 	}

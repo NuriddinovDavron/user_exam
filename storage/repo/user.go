@@ -1,10 +1,7 @@
 package repo
 
-import (
-	pb "user_exam/genproto/user_exam"
-)
+import pb "user_exam/genproto/user_exam"
 
-// UserStorageI ...
 type UserStorageI interface {
 	CreateUser(mailReq *pb.CreateUserRequest) (*pb.UserApi, error)
 	GetUserById(isUnReq *pb.GetUserByIdRequest) (*pb.UserApi, error)
